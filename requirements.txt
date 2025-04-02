@@ -1,0 +1,6 @@
+streamlit
+python-dotenv
+requests
+groq
+deep-translator
+youtube-transcript-api
