@@ -1,4 +1,5 @@
 import os
+import certifi
 import streamlit as st
 import requests
 from dotenv import load_dotenv
@@ -31,7 +32,7 @@ def get_video_title(video_id):
             return "⚠️ YouTube API Key Missing"
 
         url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={YOUTUBE_API_KEY}"
-        response = requests.get(url)
+        response = requests.get(url, verify=certifi.where())
 
         if response.status_code == 403:
             return "❌ API Key Quota Exceeded - Try another key."
