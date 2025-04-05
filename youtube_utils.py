@@ -9,8 +9,8 @@ from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFoun
 load_dotenv()
 
 # Prefer Streamlit secrets; fallback to .env (for local dev)
-YOUTUBE_API_KEY = st.secrets.get("YOUR_YOUTUBE_API_KEY", os.getenv("YOUR_YOUTUBE_API_KEY"))
-SCRAPERAPI_KEY = st.secrets.get("SCRAPERAPI_KEY", os.getenv("SCRAPERAPI_KEY"))
+YOUTUBE_API_KEY = os.getenv("YOUR_YOUTUBE_API_KEY")
+SCRAPERAPI_KEY = os.getenv("SCRAPERAPI_KEY")
 
 def extract_video_id(url):
     """Extract YouTube Video ID from URL"""
