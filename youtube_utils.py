@@ -4,7 +4,8 @@ import requests
 from youtube_transcript_api import YouTubeTranscriptApi
 
 load_dotenv()
-YOUR_YOUTUBE_API_KEY = os.getenv("YOUR_YOUTUBE_API_KEY")
+api_key = st.secrets.get("YOUR_YOUTUBE_API_KEY", os.getenv("YOUR_YOUTUBE_API_KEY"))
+
 def extract_video_id(url):
     """Extract YouTube Video ID from URL"""
     try:
@@ -20,7 +21,8 @@ def extract_video_id(url):
 def get_video_title(video_id):
     """Fetch Video Title using YouTube API"""
     try:
-        api_key = os.getenv("YOUR_YOUTUBE_API_KEY")  
+        api_key = st.secrets.get("YOUR_YOUTUBE_API_KEY", os.getenv("YOUR_YOUTUBE_API_KEY"))
+ 
         if not api_key:
             return "⚠️ YouTube API Key Missing"
 
@@ -60,10 +62,18 @@ def get_video_title(video_id):
     except requests.exceptions.RequestException as e:
         return f"⚠️ YouTube API Error: {e}"
 
+from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
+
 def fetch_youtube_transcript(video_id):
     """Fetch YouTube Video Transcript"""
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         return "\n".join([f"[{item['start']:.2f}s] {item['text']}" for item in transcript])
-    except:
-        return "⚠️ Error fetching transcript"
+    except TranscriptsDisabled:
+        return "⚠️ Transcripts are disabled for this video."
+    except NoTranscriptFound:
+        return "⚠️ No transcript available for this video."
+    except VideoUnavailable:
+        return "⚠️ This video is unavailable."
+    except Exception as e:
+        return f"⚠️ Error fetching transcript: {e}"
