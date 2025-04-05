@@ -7,7 +7,7 @@ from groq_utils import summarize_text, translate_summary
 
 # Load environment variables
 load_dotenv()
-YOUR_YOUTUBE_API_KEY = st.secrets.get("YOUR_YOUTUBE_API_KEY", os.getenv("YOUR_YOUTUBE_API_KEY"))
+YOUR_YOUTUBE_API_KEY =  os.getenv("YOUR_YOUTUBE_API_KEY")
 
 # 🔹 Set YouTube Favicon
 st.set_page_config(page_title="YouTube Summarizer", page_icon="🎥", layout="wide")
