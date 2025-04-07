@@ -27,7 +27,7 @@ def summarize_text(text, video_title):
     - **Avoid generic summaries**—instead, deliver an **educational-style breakdown**.
 
     📌 **Structured Summary Format:**
-    1️⃣ **Introduction & Context:** What is the video about? explain concepts in detail with real time examples to unserstand better than the      original content, and provide a concise summary of the video transcript.
+    1️⃣ **Introduction & Context:** What is the video about? explain concepts in detail with real time examples to unserstand better than the original content, and provide a concise summary of the video transcript.
     2️⃣ **Key Concepts & Insights:** Summarize major ideas in a way that helps a beginner understand.
     3️⃣ **Step-by-Step Explanations:** If the video teaches something, outline the process or method in a structured way.
     4️⃣ **Important Quotes or Examples:** Capture any relevant analogies, frameworks, or real-world applications.
@@ -90,6 +90,5 @@ def translate_summary(summary_text, target_language):
         return GoogleTranslator(source='auto', target=target_language).translate(summary_text)
     except Exception as e:
         return f"Translation failed: {str(e)}"
-
 
 
