@@ -81,40 +81,42 @@ if st.sidebar.button("🆕 New Chat"):
     st.rerun()
 
 # ✅ Main Section: YouTube Video Input
-with st.form("video_form"):
-    video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
-    submit_video = st.form_submit_button("Summarize Video")
+video_url = ""
+submit_video = False
 
-if submit_video and video_url:
-    video_id = extract_video_id(video_url)
+if "api_key" in st.session_state:
+    with st.form("video_form"):
+        video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
+        submit_video = st.form_submit_button("Summarize Video")
 
-    if video_id:
-        with st.spinner("🔍 Fetching video title..."):
-            video_title = get_video_title(video_id) #YOUR_YOUTUBE_API_KEY)
+    # 👇 Only run logic *outside* the form after the submit button is clicked
+    if submit_video and video_url:
+        video_id = extract_video_id(video_url)
 
-        with st.spinner("🎙️ Fetching transcript..."):
-            transcript_text = fetch_youtube_transcript(video_id)
+        if video_id:
+            with st.spinner("🔍 Fetching video title..."):
+                video_title = get_video_title(video_id)
 
-        if "Error" in transcript_text:
-            st.error(transcript_text)
-        else:
-            # Summarize Video
-            with st.spinner("📝 Generating Summary..."):
-                summary = summarize_text(transcript_text, video_title)
+            with st.spinner("🎙️ Fetching transcript..."):
+                transcript_text = fetch_youtube_transcript(video_id)
 
-            # Translate Summary if Needed
-            if selected_language != "English":
-                with st.spinner(f"🌎 Translating Summary to {selected_language}..."):
-                    summary = translate_summary(summary, languages[selected_language])
+            if "Error" in transcript_text:
+                st.error("⚠️ Error fetching transcript")
+            else:
+                with st.spinner("📝 Generating Summary..."):
+                    summary = summarize_text(transcript_text, video_title)
 
-            # ✅ Store Chat History
-            st.session_state.chat_history[video_title] = summary
-            st.session_state["last_summary"] = summary
-            st.session_state["last_video_title"] = video_title
+                if selected_language != "English":
+                    with st.spinner(f"🌎 Translating Summary to {selected_language}..."):
+                        summary = translate_summary(summary, languages[selected_language])
 
-            # st.subheader(f"📜 Video Summary")
-            st.subheader(f"📜 {video_title} - Summary")
-            st.write(summary)
+                st.session_state.chat_history[video_title] = summary
+                st.session_state["last_summary"] = summary
+                st.session_state["last_video_title"] = video_title
+
+                st.subheader(f"📜 {video_title} - Summary")
+                st.write(summary)
+
 
 # ✅ Follow-up Question Section
 if "last_summary" in st.session_state and st.session_state["last_summary"]:
