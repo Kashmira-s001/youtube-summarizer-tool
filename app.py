@@ -24,11 +24,14 @@ if "chat_history" not in st.session_state:
 # ✅ Handle API Key (One-time entry)
 if "api_key" not in st.session_state:
     with st.sidebar.form("api_key_form"):
-        groq_api_key = st.text_input("🔑 Enter Groq API Key:", type="password")
+        groq_api_key = st.sidebar.text_input("🔑 Enter Groq API Key:", type="password")
         submit_api_key = st.form_submit_button("Set API Key")
         if submit_api_key and groq_api_key:
             st.session_state.api_key = groq_api_key
             st.rerun()
+        elif not st.session_state.get("api_key"):
+            st.warning("⚠️ Please set your Groq API key from the sidebar to begin.")
+    
 else:
     st.sidebar.success("✅ API Key Set")
 
