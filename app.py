@@ -23,18 +23,12 @@ if "chat_history" not in st.session_state:
 
 # ✅ Handle API Key (One-time entry)
 if "api_key" not in st.session_state:
-    with st.sidebar.form("api_key_form"):
-        groq_api_key = st.sidebar.text_input("🔑 Enter Groq API Key:", type="password")
-        submit_api_key = st.form_submit_button("Set API Key")
-        if submit_api_key and groq_api_key:
-            st.session_state.api_key = groq_api_key
-            st.rerun()
-        elif not st.session_state.get("api_key"):
-            st.warning("⚠️ Please set your Groq API key from the sidebar to begin.")
-    
+    groq_api_key = st.sidebar.text_input("🔑 Enter Groq API Key:", type="password")
+    if groq_api_key:
+        st.session_state.api_key = groq_api_key
+        st.rerun()
 else:
     st.sidebar.success("✅ API Key Set")
-
 
 # ✅ Language Selection for Summary
 languages = {
@@ -81,42 +75,38 @@ if st.sidebar.button("🆕 New Chat"):
     st.rerun()
 
 # ✅ Main Section: YouTube Video Input
-video_url = ""
-submit_video = False
+video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
 
-if "api_key" in st.session_state:
-    with st.form("video_form"):
-        video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
-        submit_video = st.form_submit_button("Summarize Video")
+if video_url:
+    video_id = extract_video_id(video_url)
 
-    # 👇 Only run logic *outside* the form after the submit button is clicked
-    if submit_video and video_url:
-        video_id = extract_video_id(video_url)
+    if video_id:
+        with st.spinner("🔍 Fetching video title..."):
+            video_title = get_video_title(video_id) #YOUR_YOUTUBE_API_KEY)
 
-        if video_id:
-            with st.spinner("🔍 Fetching video title..."):
-                video_title = get_video_title(video_id)
+        with st.spinner("🎙️ Fetching transcript..."):
+            transcript_text = fetch_youtube_transcript(video_id)
 
-            with st.spinner("🎙️ Fetching transcript..."):
-                transcript_text = fetch_youtube_transcript(video_id)
+        if "Error" in transcript_text:
+            st.error(transcript_text)
+        else:
+            # Summarize Video
+            with st.spinner("📝 Generating Summary..."):
+                summary = summarize_text(transcript_text, video_title)
 
-            if "Error" in transcript_text:
-                st.error("⚠️ Error fetching transcript")
-            else:
-                with st.spinner("📝 Generating Summary..."):
-                    summary = summarize_text(transcript_text, video_title)
+            # Translate Summary if Needed
+            if selected_language != "English":
+                with st.spinner(f"🌎 Translating Summary to {selected_language}..."):
+                    summary = translate_summary(summary, languages[selected_language])
 
-                if selected_language != "English":
-                    with st.spinner(f"🌎 Translating Summary to {selected_language}..."):
-                        summary = translate_summary(summary, languages[selected_language])
+            # ✅ Store Chat History
+            st.session_state.chat_history[video_title] = summary
+            st.session_state["last_summary"] = summary
+            st.session_state["last_video_title"] = video_title
 
-                st.session_state.chat_history[video_title] = summary
-                st.session_state["last_summary"] = summary
-                st.session_state["last_video_title"] = video_title
-
-                st.subheader(f"📜 {video_title} - Summary")
-                st.write(summary)
-
+            # st.subheader(f"📜 Video Summary")
+            st.subheader(f"📜 {video_title} - Summary")
+            st.write(summary)
 
 # ✅ Follow-up Question Section
 if "last_summary" in st.session_state and st.session_state["last_summary"]:
