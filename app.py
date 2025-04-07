@@ -2,8 +2,8 @@ import os
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from utils.youtube_utils import extract_video_id, get_video_title, fetch_youtube_transcript
-from utils.groq_utils import summarize_text, translate_summary
+from youtube_utils import extract_video_id, get_video_title, fetch_youtube_transcript
+from groq_utils import summarize_text, translate_summary
 
 # Load environment variables
 load_dotenv()
