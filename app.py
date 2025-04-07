@@ -23,12 +23,15 @@ if "chat_history" not in st.session_state:
 
 # ✅ Handle API Key (One-time entry)
 if "api_key" not in st.session_state:
-    groq_api_key = st.sidebar.text_input("🔑 Enter Groq API Key:", type="password")
-    if groq_api_key:
-        st.session_state.api_key = groq_api_key
-        st.rerun()
+    with st.sidebar.form("api_key_form"):
+        groq_api_key = st.text_input("🔑 Enter Groq API Key:", type="password")
+        submit_api_key = st.form_submit_button("Set API Key")
+        if submit_api_key and groq_api_key:
+            st.session_state.api_key = groq_api_key
+            st.rerun()
 else:
     st.sidebar.success("✅ API Key Set")
+
 
 # ✅ Language Selection for Summary
 languages = {
@@ -75,9 +78,11 @@ if st.sidebar.button("🆕 New Chat"):
     st.rerun()
 
 # ✅ Main Section: YouTube Video Input
-video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
+with st.form("video_form"):
+    video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
+    submit_video = st.form_submit_button("Summarize Video")
 
-if video_url:
+if submit_video and video_url:
     video_id = extract_video_id(video_url)
 
     if video_id:
