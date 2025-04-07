@@ -2,20 +2,17 @@ import os
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from youtube_utils import extract_video_id, get_video_title, fetch_youtube_transcript
-from groq_utils import summarize_text, translate_summary
+from utils.youtube_utils import extract_video_id, get_video_title, fetch_youtube_transcript
+from utils.groq_utils import summarize_text, translate_summary
 
 # Load environment variables
 load_dotenv()
-YOUR_YOUTUBE_API_KEY =  os.getenv("YOUR_YOUTUBE_API_KEY")
-
+YOUR_YOUTUBE_API_KEY = os.getenv("YOUR_YOUTUBE_API_KEY")
 # 🔹 Set YouTube Favicon
 st.set_page_config(page_title="YouTube Summarizer", page_icon="🎥", layout="wide")
 
 # 🔹 Page Header
-st.markdown("""
-    <h1 style='text-align: center; font-size: 36px; font-weight: bold;'>▶️ YouTube Video Summarizer Tool</h1>
-""", unsafe_allow_html=True)
+st.title("▶️ YouTube Video Summarizer Tool")
 
 # 🔹 Sidebar: API Key Entry
 st.sidebar.subheader("📂 Chat History")
@@ -24,17 +21,14 @@ st.sidebar.subheader("📂 Chat History")
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = {}
 
-# ✅ Handle API Key (One-time entry with Submit Button)
+# ✅ Handle API Key (One-time entry)
 if "api_key" not in st.session_state:
-    with st.sidebar.form("api_form"):
-        groq_api_key = st.text_input("🔑 Enter Groq API Key:", type="password")
-        api_submit = st.form_submit_button("Submit API Key")
-    if api_submit and groq_api_key:
+    groq_api_key = st.sidebar.text_input("🔑 Enter Groq API Key:", type="password")
+    if groq_api_key:
         st.session_state.api_key = groq_api_key
         st.rerun()
 else:
     st.sidebar.success("✅ API Key Set")
-
 
 # ✅ Language Selection for Summary
 languages = {
@@ -80,17 +74,15 @@ if st.sidebar.button("🆕 New Chat"):
     st.session_state["last_video_title"] = ""
     st.rerun()
 
-# ✅ Main Section: YouTube Video Input with Submit Button
-with st.form("video_form"):
-    video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
-    video_submit = st.form_submit_button("Summarize Video")
+# ✅ Main Section: YouTube Video Input
+video_url = st.text_input("📌 Enter YouTube Video URL to Summarize:", key="video_url")
 
-if video_url and video_submit:
+if video_url:
     video_id = extract_video_id(video_url)
 
     if video_id:
         with st.spinner("🔍 Fetching video title..."):
-            video_title = get_video_title(video_id)
+            video_title = get_video_title(video_id) #YOUR_YOUTUBE_API_KEY)
 
         with st.spinner("🎙️ Fetching transcript..."):
             transcript_text = fetch_youtube_transcript(video_id)
@@ -112,35 +104,17 @@ if video_url and video_submit:
             st.session_state["last_summary"] = summary
             st.session_state["last_video_title"] = video_title
 
-            # ✅ Display Video Title in Center with Large, Bold Font
-            st.markdown(f"""
-                <h2 style='text-align: center; font-size: 28px; font-weight: bold;'>📜 {video_title} - Summary</h2>
-            """, unsafe_allow_html=True)
-
-            # ✅ Format Summary with Headings
-            if isinstance(summary, dict):  # Ensure structured summary
-                formatted_summary = ""
-                for section, content in summary.items():
-                    formatted_summary += f"""
-                        <h3 style='font-size: 24px; font-weight: bold; margin-top: 20px;'>{section}</h3>
-                        <p style='font-size: 18px;'>{content}</p>
-                    """
-            else:  # If summary is plain text
-                formatted_summary = f"<p style='font-size: 18px;'>{summary}</p>"
-
-            st.markdown(formatted_summary, unsafe_allow_html=True)
+            # st.subheader(f"📜 Video Summary")
+            st.subheader(f"📜 {video_title} - Summary")
+            st.write(summary)
 
 # ✅ Follow-up Question Section
 if "last_summary" in st.session_state and st.session_state["last_summary"]:
-    st.markdown("""
-        <h2>💬 Need Further Explanation?</h2>
-    """, unsafe_allow_html=True)
+    st.subheader("💬 Need Further Explanation?")
     user_question = st.text_input("Ask any follow-up questions:", key="followup_question")
 
     if user_question:
         with st.spinner("🤔 Thinking..."):
             followup_response = summarize_text(user_question, st.session_state["last_video_title"])
-            st.markdown("""
-                <h2>🔍 Clarification Response</h2>
-            """, unsafe_allow_html=True)
+            st.subheader("🔍 Clarification Response")
             st.write(followup_response)
